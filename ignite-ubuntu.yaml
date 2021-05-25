@@ -1,0 +1,31 @@
+kind: Recipe
+apiVersion: v1alpha1
+name: ignite-ubuntu
+version: "0.9.0"
+platform: ["linux"]
+arch: ["amd64"]
+values:
+  CNI_VERSION: "0.9.1"
+steps:
+  - name: "check_kvm"
+    platform: ["linux"]
+    script:
+      - sudo apt-get update
+      - sudo apt-get install -y cpu-checker
+      - kvm-ok
+  - name: "dependencies"
+    platform: ["linux"]
+    script:
+      - apt-get update && apt-get install -y --no-install-recommends dmsetup openssh-client git binutils
+      - which containerd || apt-get install -y --no-install-recommends containerd
+  - name: "cni_plugins"
+    platform: ["linux"]
+    script:
+      - sudo mkdir -p /opt/cni/bin
+      - curl -sSL https://github.com/containernetworking/plugins/releases/download/v{{.CNI_VERSION}}/cni-plugins-linux-${{.arch}}-{{.CNI_VERSION}}.tgz | sudo tar -xz -C /opt/cni/bin
+  - name: "install"
+    platform: ["linux"]
+    script:
+      - curl -sfLo ignite https://github.com/weaveworks/ignite/releases/download/v{{.version}}/ignite-{{.arch}}
+      - chmod +x ignite
+      - sudo mv ignite /usr/local/bin

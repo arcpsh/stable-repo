@@ -1,0 +1,21 @@
+kind: Recipe
+apiVersion: v1alpha1
+name: kubectl
+version: "1.21.0"
+platform: ["linux", "darwin"]
+arch: ["amd64", "arm64"]
+values:
+steps:
+  - platform: ["linux", "darwin"]
+    script:
+      - curl -LO https://dl.k8s.io/release/v{{.version}}/bin/{{.platform}}/{{.arch}}/kubectl
+      - curl -LO https://dl.k8s.io/release/v{{.version}}/bin/{{.platform}}/{{.arch}}/kubectl.sha256
+      - echo "$(<kubectl.sha256) kubectl" | sha256sum --check
+  - platform: ["linux"]
+    script:
+      - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  - platform: ["darwin"]
+    script:
+      - chmod +x ./kubectl
+      - sudo mv ./kubectl /usr/local/bin/kubectl
+      - "sudo chown root: /usr/local/bin/kubectl"
